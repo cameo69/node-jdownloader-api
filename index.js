@@ -134,7 +134,11 @@ const callAction = (action, deviceId, params) => {
         const result = decrypt(parsedBody, __deviceEncryptionToken);
         resolve(JSON.parse(unescapeJson(result)));
       }).catch((err) => {
-        rejected(decrypt(err.error, __deviceEncryptionToken));
+        if (typeof(err.error) === "string") {
+          rejected(decrypt(err.error, __deviceEncryptionToken));
+        } else {
+          rejected(err)
+        }
       });
   });
 };
