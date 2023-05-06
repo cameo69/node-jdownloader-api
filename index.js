@@ -124,7 +124,7 @@ const callAction = (action, deviceId, params) => {
       url: action,
       rid: uniqueRid(),
       apiVer: __apiVer,
-    };
+  };
   }
   const jsonData = encrypt(JSON.stringify(json), __deviceEncryptionToken);
   const url = __ENPOINT + query;
@@ -235,19 +235,25 @@ exports.addLinks = (links, deviceId, autostart, packageName = null) => {
 };
 
 exports.queryLinks = (deviceId) => {
-  const params = `{"addedDate" : true,
-                   "bytesLoaded": true,
-                   "bytesTotal": true,
-                   "enabled": true,
-                   "finished": true,
-                   "url": true,
-                   "status": true,
-                   "speed": true,
-                   "finishedDate": true,
-                   "priority" : true,
-                   "extractionStatus": true,
-                   "host": true,
-                   "running" : true}`;
+  //params see https://my.jdownloader.org/developers/#tag_98
+  const params = `{
+    "addedDate"        : true,
+    "bytesLoaded"      : true,
+    "bytesTotal"       : true,
+    "comment"          : true,
+    "enabled"          : true,
+    "eta"              : true,
+    "extractionStatus" : true,
+    "finished"         : true,
+    "finishedDate"     : true,
+    "host"             : true,
+    "password"         : true,
+    "priority"         : true,
+    "running"          : true,
+    "skipped"          : true,
+    "speed"            : true,
+    "status"           : true,
+    "url"              : true}`;
   return new Promise((resolve, rejected) => {
     callAction('/downloadsV2/queryLinks', deviceId, [params])
       .then((val) => {
