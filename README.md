@@ -71,7 +71,8 @@ jdownloaderAPI.addLinks(LINKS, DEVICEID, true(autostart))
 
 ```javascript
 // List all links from the download area of the specified device
-jdownloaderAPI.queryLinks(DEVICEID)
+// optional PACKAGESUUIDS should be an array of numbers; you can get them from the queryPackages method
+jdownloaderAPI.queryLinks(DEVICEID, PACKAGESUUIDS = [])
 ```
 
 ## queryPackages
@@ -79,6 +80,6 @@ jdownloaderAPI.queryLinks(DEVICEID)
 ```javascript
 // List all packages from the download area of the specified device
 // current status, total bytes loaded, etc ...
-// nb : packagesUUIS must be comma separated you can get them from the queryLinks method
+// nb : packagesUUIS must be comma separated
 jdownloaderAPI.queryPackages(DEVICEID, PACKAGESUUIDS)
 ```
