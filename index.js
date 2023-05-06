@@ -55,7 +55,7 @@ const decrypt = (data, iv_key) => {
   return textDecoder.decode(pkcs7.unpad(test));
 };
 
-const unescapeJson = json => json.replace(/[^\x30-\x39\x41-\x5A\x61-\x7A\x7B\x7D\x20\x26\x28\x29\x2C\x27\x22\x2E\x2F\x26\x40\x5C\x3A\x2D\x5C\x5B\x5D]/g, '').replace(/\s+/g, ' ');
+const unescapeJson = json => json.replace(/[^\x30-\x39\x41-\x5A\x61-\x7A\x7B\x7D\x20\x26\x28\x29\x2C\x27\x22\x2E\x2F\x26\x40\x5F\x3A\x2D\x5C\x5B\x5D]/g, '').replace(/\s+/g, ' ');
 
 const postQuery = (url, params) => {
   let options = {
@@ -132,7 +132,7 @@ const callAction = (action, deviceId, params) => {
     postQuery(url, jsonData)
       .then((parsedBody) => {
         const result = decrypt(parsedBody, __deviceEncryptionToken);
-        resolve(JSON.parse(unescapeJson(result)));
+        resolve(JSON.parse(result));
       }).catch((err) => {
         if (typeof(err.error) === "string") {
           rejected(decrypt(err.error, __deviceEncryptionToken));
