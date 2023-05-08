@@ -157,10 +157,11 @@ const updateEncryptionToken = (oldTokenBytes, updateToken) => {
 };
 
 exports.connect = (username, password) => {
-  __loginSecret = createSecret(username, password, __SERVER_DOMAIN);
-  __deviceSecret = createSecret(username, password, __DEVICE_DOMAIN);
+  const usernameLower = username.toLowerCase();
+  __loginSecret = createSecret(usernameLower, password, __SERVER_DOMAIN);
+  __deviceSecret = createSecret(usernameLower, password, __DEVICE_DOMAIN);
 
-  const query = `/my/connect?email=${encodeURI(username)}&appkey=${__APPKEY}`;
+  const query = `/my/connect?email=${encodeURI(usernameLower)}&appkey=${__APPKEY}`;
 
   return new Promise((resolve, rejected) => {
     callServer(query, __loginSecret, null).then((val) => {
