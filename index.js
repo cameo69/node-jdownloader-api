@@ -130,16 +130,17 @@ const callAction = (action, deviceId, params) => {
       apiVer: __apiVer,
     };
   }
-  const jsonData = encrypt(JSON.stringify(json), __deviceEncryptionToken);
+  const currentDeviceEncryptionToken = __deviceEncryptionToken;
+  const jsonData = encrypt(JSON.stringify(json), currentDeviceEncryptionToken);
   const url = __ENPOINT + query;
   return new Promise((resolve, rejected) => {
     postQuery(url, jsonData)
       .then((parsedBody) => {
-        const result = decrypt(parsedBody, __deviceEncryptionToken);
+        const result = decrypt(parsedBody, currentDeviceEncryptionToken);
         resolve(JSON.parse(result));
       }).catch((err) => {
         if (typeof(err.error) === "string") {
-          rejected(decrypt(err.error, __deviceEncryptionToken));
+          rejected(decrypt(err.error, currentDeviceEncryptionToken));
         } else {
           rejected(err)
         }
