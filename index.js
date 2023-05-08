@@ -10,7 +10,7 @@ const __APPKEY = 'my_jd_nodeJS_webinterface';
 const __SERVER_DOMAIN = 'server';
 const __DEVICE_DOMAIN = 'device';
 
-let __rid_counter;
+let __rid_counter = 0;
 let __loginSecret;
 let __deviceSecret;
 let __sessionToken;
@@ -20,7 +20,11 @@ let __deviceEncryptionToken;
 const __apiVer = 1;
 
 const uniqueRid = () => {
-  __rid_counter = Math.floor(Date.now());
+  newRid = Math.floor(Date.now());
+  while (newRid <= __rid_counter) {
+    newRid++;
+  } 
+  __rid_counter = newRid;
   return __rid_counter;
 };
 
@@ -82,7 +86,7 @@ const callServer = (query, key, params) => {
     if (key) {
       params = encrypt(params, key);
     }
-    rid = __rid_counter;
+    //rid = __rid_counter;
   }
 
   if (query.includes('?')) {
@@ -124,7 +128,7 @@ const callAction = (action, deviceId, params) => {
       url: action,
       rid: uniqueRid(),
       apiVer: __apiVer,
-  };
+    };
   }
   const jsonData = encrypt(JSON.stringify(json), __deviceEncryptionToken);
   const url = __ENPOINT + query;
