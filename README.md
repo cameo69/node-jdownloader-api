@@ -1,4 +1,4 @@
-Node Jdownloader API
+Node My.Jdownloader API
 ======
 **A NodeJS wrapper for My.jdownloader.org API**
 
@@ -27,16 +27,16 @@ Features
 Usage
 --------
 
-To install `jdownloader-api` in your node.js project:
+To install `myjdownloader-api` in your node.js project:
 
 ```
-npm install jdownloader-api
+npm install myjdownloader-api
 ```
 
 And to access it from within node, simply add:
 
 ```javascript
-const jdownloaderAPI = require('jdownloader-api');
+const jdownloaderAPI = require('myjdownloader-api');
 ```
 API
 --------
@@ -79,7 +79,7 @@ jdownloaderAPI.addLinks(LINKS, DEVICEID, true(autostart))
 ```javascript
 // List all links from the download area of the specified device
 // optional PACKAGESUUIDS should be an array of numbers; you can get them from the queryPackages method
-jdownloaderAPI.queryLinks(DEVICEID, PACKAGESUUIDS = [])
+jdownloaderAPI.queryLinks(DEVICEID, PACKAGESUUIDS)
 ```
 
 ## queryPackages
@@ -90,3 +90,9 @@ jdownloaderAPI.queryLinks(DEVICEID, PACKAGESUUIDS = [])
 // nb : packagesUUIS must be comma separated
 jdownloaderAPI.queryPackages(DEVICEID, PACKAGESUUIDS)
 ```
+
+## Links
+
+[npm](https://www.npmjs.com/package/myjdownloader-api) https://www.npmjs.com/package/myjdownloader-api
+
+[GitHub](https://github.com/cameo69/node-jdownloader-api) https://github.com/cameo69/node-jdownloader-api
