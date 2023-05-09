@@ -228,18 +228,19 @@ exports.getDirectConnectionInfos = deviceId => new Promise((resolve, rejected) =
     });
 });
 
-exports.addLinks = (links, deviceId, autostart = true, packageName) => {
+exports.addLinks = (links, deviceId, autostart = true, packageName, destinationFolder) => {
   let params = {
     "priority": "DEFAULT",
     "links": links,
     "autostart": autostart
   };
-
   if (packageName) {
-    if (typeof packageName === "string") {
       params.packageName = packageName;
       params.overwritePackagizerRules = true;
-    }
+  }
+  if (destinationFolder) {
+      params.destinationFolder = destinationFolder;
+      params.overwritePackagizerRules = true;
   }
 
   return new Promise((resolve, rejected) => {
