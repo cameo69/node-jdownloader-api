@@ -103,7 +103,7 @@ const callServer = (query, key, params) => {
     postQuery(url, params)
       .then((parsedBody) => {
         const result = decrypt(parsedBody, key);
-        resolve(JSON.parse(unescapeJson(result)));
+        resolve(JSON.parse(result));
       }).catch((err) => {
         rejected(err);
       });
@@ -115,21 +115,14 @@ const callAction = (action, deviceId, params) => {
     return Promise.reject(new Error('Not connected'));
   }
   const query = `/t_${encodeURI(__sessionToken)}_${encodeURI(deviceId)}${action}`;
-  let json;
+  let json = {
+    url: action,
+    rid: uniqueRid(),
+    apiVer: __apiVer,
+  };
   if (params) {
-    json = {
-      url: action,
-      params,
-      rid: uniqueRid(),
-      apiVer: __apiVer,
-    };
-  } else {
-    json = {
-      url: action,
-      rid: uniqueRid(),
-      apiVer: __apiVer,
-    };
-  }
+    json.params = params;
+  };
   const currentDeviceEncryptionToken = __deviceEncryptionToken;
   const jsonData = encrypt(JSON.stringify(json), currentDeviceEncryptionToken);
   const url = __ENPOINT + query;
@@ -155,6 +148,8 @@ const updateEncryptionToken = (oldTokenBytes, updateToken) => {
   const thirdbuffer = Buffer.concat([buffer, secondbuffer], buffer.length + secondbuffer.length);
   return crypto.SHA256(thirdbuffer, { asBytes: true });
 };
+
+exports.callAction = callAction;
 
 exports.connect = (username, password) => {
   const usernameLower = username.toLowerCase();
@@ -227,11 +222,22 @@ exports.getDirectConnectionInfos = deviceId => new Promise((resolve, rejected) =
     });
 });
 
-exports.addLinks = (links, deviceId, autostart, packageName = null) => {
-  const packageNameParam = packageName !== null ? `,"packageName": "${packageName}"` : '' ;
-  const params = `{"priority":"DEFAULT","links":"${links}","autostart":${autostart}${packageNameParam}}`;
+exports.addLinks = (links, deviceId, autostart = true, packageName) => {
+  let params = {
+    "priority": "DEFAULT",
+    "links": links,
+    "autostart": autostart
+  };
+
+  if (packageName) {
+    if (typeof packageName === "string") {
+      params.packageName = packageName;
+      params.overwritePackagizerRules = true;
+    }
+  }
+
   return new Promise((resolve, rejected) => {
-    callAction('/linkgrabberv2/addLinks', deviceId, [params])
+    callAction('/linkgrabberv2/addLinks', deviceId, [JSON.stringify(params)])
       .then((val) => {
         resolve(val);
       }).catch((error) => {
@@ -240,29 +246,40 @@ exports.addLinks = (links, deviceId, autostart, packageName = null) => {
   });
 };
 
-exports.queryLinks = (deviceId, packagesIds = []) => {
+exports.queryLinks = (deviceId, packagesIds) => {
   //params see https://my.jdownloader.org/developers/#tag_98
-  const packages = packagesIds.length == 0 ? `` : `, "packageUUIDs" : [${packagesIds}]`;
-  const params = `{
-    "addedDate"        : true,
-    "bytesLoaded"      : true,
-    "bytesTotal"       : true,
-    "comment"          : true,
-    "enabled"          : true,
-    "eta"              : true,
-    "extractionStatus" : true,
-    "finished"         : true,
-    "finishedDate"     : true,
-    "host"             : true,
-    "password"         : true,
-    "priority"         : true,
-    "running"          : true,
-    "skipped"          : true,
-    "speed"            : true,
-    "status"           : true,
-    "url"              : true${packages}}`;
+  let params = {
+      "addedDate"        : true,
+      "bytesLoaded"      : true,
+      "bytesTotal"       : true,
+      "comment"          : true,
+      "enabled"          : true,
+      "eta"              : true,
+      "extractionStatus" : true,
+      "finished"         : true,
+      "finishedDate"     : true,
+      "host"             : true,
+      "password"         : true,
+      "priority"         : true,
+      "running"          : true,
+      "skipped"          : true,
+      "speed"            : true,
+      "status"           : true,
+      "url"              : true
+  };
+  
+  if (packagesIds) {
+      if (typeof packagesIds === "string") {
+          params.packageUUIDs = [packagesIds];
+      } else if (typeof packagesIds === "number") {
+          params.packageUUIDs = [packagesIds];
+      } else if (typeof packagesIds === "object" && packagesIds.length > 0) {
+          params.packageUUIDs = packagesIds;
+      }
+  }
+
   return new Promise((resolve, rejected) => {
-    callAction('/downloadsV2/queryLinks', deviceId, [params])
+      callAction('/downloadsV2/queryLinks', deviceId, [JSON.stringify(params)])
       .then((val) => {
         resolve(val);
       }).catch((error) => {
@@ -273,7 +290,7 @@ exports.queryLinks = (deviceId, packagesIds = []) => {
 
 exports.queryPackages = (deviceId, packagesIds) => {
   //params see https://my.jdownloader.org/developers/#tag_144
-  const params = `{
+  let params = {
     "bytesLoaded"  : true,
     "bytesTotal"   : true,
     "childCount"   : true,
@@ -286,10 +303,21 @@ exports.queryPackages = (deviceId, packagesIds) => {
     "running"      : true,
     "saveTo"       : true,
     "speed"        : true,
-    "status"       : true,
-    "packageUUIDs" : [${packagesIds}]}`;
+    "status"       : true
+  };
+
+  if (packagesIds) {
+    if (typeof packagesIds === "string") {
+        params.packageUUIDs = [packagesIds];
+    } else if (typeof packagesIds === "number") {
+        params.packageUUIDs = [packagesIds];
+    } else if (typeof packagesIds === "object" && packagesIds.length > 0) {
+        params.packageUUIDs = packagesIds;
+    }
+  }
+
   return new Promise((resolve, rejected) => {
-    callAction('/downloadsV2/queryPackages', deviceId, [params])
+    callAction('/downloadsV2/queryPackages', deviceId, [JSON.stringify(params)])
       .then((val) => {
         resolve(val);
       }).catch((error) => {
@@ -301,7 +329,7 @@ exports.queryPackages = (deviceId, packagesIds) => {
 exports.cleanUpFinishedLinks = (deviceId) => {
     const params =  ["[]", "[]", "DELETE_FINISHED", "REMOVE_LINKS_ONLY", "ALL"];
     return new Promise((resolve, rejected) => {
-        callAction('/downloadsV2/cleanup', deviceId, params)
+      callAction('/downloadsV2/cleanup', deviceId, params)
           .then((val) => {
             resolve(val);
           }).catch((error) => {
