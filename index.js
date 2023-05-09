@@ -63,8 +63,6 @@ const decrypt = (data, iv_key) => {
   return decrypted;
 };
 
-const unescapeJson = json => json.replace(/[^\x30-\x39\x41-\x5A\x61-\x7A\x7B\x7D\x20\x26\x28\x29\x2C\x27\x22\x2E\x2F\x26\x40\x5F\x3A\x2D\x5C\x5B\x5D]/g, '').replace(/\s+/g, ' ');
-
 const postQuery = (url, params) => {
   let options = {
     method: 'POST',
@@ -91,10 +89,8 @@ const addRidCheck = (obj, senderRid) => {
 
 const callServer = (query, key, params) => {
   const rid = uniqueRid();
-  if (params) {
-    if (key) {
-      params = encrypt(params, key);
-    }
+  if (params && key) {
+    params = encrypt(params, key);
   }
 
   if (query.includes('?')) {
