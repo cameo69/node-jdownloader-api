@@ -8,7 +8,7 @@ try {
   throw new Error('crypto support is disabled!');
 }
 
-const requestPromise = require('request-promise');
+const axios = require('axios')
 
 const __ENPOINT = 'https://api.jdownloader.org';
 const __APPKEY = 'my_jd_nodeJS_webinterface';
@@ -64,21 +64,19 @@ const decrypt = (data, iv_key) => {
 };
 
 const postQuery = (url, params) => {
-  let options = {
-    method: 'POST',
-    uri: url,
-    headers: {
-      'Content-Type': 'application/aesjson-jd; charset=utf-8',
-    },
-  };
-  if (params) {
-    options = {
-      method: 'POST',
-      uri: url,
-      body: params,
-    };
+  //const l = {"url": url, "params": params};
+  //console.log(l);
+  if (params === null) {
+    return axios.post(url);
   }
-  return requestPromise.post(options);
+
+  let options = {
+    headers: {
+      'Content-Type': 'application/aesjson-jd; charset=utf-8'
+    }
+  };
+
+  return axios.post(url, params, options);
 };
 
 const addRidCheck = (obj, senderRid) => {
@@ -106,7 +104,7 @@ const callServer = (query, key, params) => {
   return new Promise((resolve, rejected) => {
     postQuery(url, params)
       .then((parsedBody) => {
-        let result = decrypt(parsedBody, key);
+        let result = decrypt(parsedBody.data, key);
         result = addRidCheck(JSON.parse(result), rid)
         resolve(result);
       }).catch((err) => {
@@ -135,7 +133,7 @@ const callAction = (action, deviceId, params) => {
   return new Promise((resolve, rejected) => {
     postQuery(url, jsonData)
       .then((parsedBody) => {
-        let result = decrypt(parsedBody, currentDeviceEncryptionToken);
+        let result = decrypt(parsedBody.data, currentDeviceEncryptionToken);
         result = addRidCheck(JSON.parse(result), senderRid)
         resolve(result);
       }).catch((err) => {
