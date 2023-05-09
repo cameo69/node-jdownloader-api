@@ -1,9 +1,14 @@
 /* eslint-disable camelcase,no-param-reassign,no-underscore-dangle */
-const crypto = require('ezcrypto').Crypto;
-const aesjs = require('aes-js');
+
+let crypto;
+try {
+  crypto = require('node:crypto');
+  Object.seal(crypto);
+} catch (err) {
+  throw new Error('crypto support is disabled!');
+}
+
 const requestPromise = require('request-promise');
-const textEncoding = require('text-encoding');
-const pkcs7 = require('pkcs7');
 
 const __ENPOINT = 'https://api.jdownloader.org';
 const __APPKEY = 'my_jd_nodeJS_webinterface';
@@ -28,35 +33,34 @@ const uniqueRid = () => {
   return __rid_counter;
 };
 
-const createSecret = (username, password, domain) => crypto.SHA256(username + password + domain, { asBytes: true });
-
-const sign = (key, data) => crypto.HMAC(crypto.SHA256, data, key, { asBytes: false });
+const SHA256 = (data, encoding = 'byte') => Array.from(new Uint8Array(crypto.createHash('sha256').update(data).digest(encoding)));
+const createSecret = (username, password, domain) => SHA256(username + password + domain);
+const sign = (key, data) => crypto.createHmac('sha256', Buffer.from(key)).update(data).digest('hex');
 
 const encrypt = (data, iv_key) => {
-  const string_iv_key = crypto.charenc.Binary.bytesToString(iv_key);
-  const string_iv = string_iv_key.substring(0, string_iv_key.length / 2);
-  const string_key = string_iv_key.substring(string_iv_key.length / 2, string_iv_key.length);
-  const iv = crypto.charenc.Binary.stringToBytes(string_iv);
-  const key = crypto.charenc.Binary.stringToBytes(string_key);
-  const aesCbc = new aesjs.ModeOfOperation.cbc(key, iv);
-  const dataBytes = aesjs.utils.utf8.toBytes(data);
-  const paddedData = aesjs.padding.pkcs7.pad(dataBytes);
-  const encryptedBytes = aesCbc.encrypt(paddedData);
-  const buff = Buffer.from(encryptedBytes, 'base64');
-  const base64data = buff.toString('base64');
-  return base64data;
+  const iv_string = iv_key.slice(0, iv_key.length / 2);
+  const key_string = iv_key.slice(iv_key.length / 2);
+
+  const key = Buffer.from(key_string);
+  const iv = Buffer.from(iv_string);
+
+  const cipher = crypto.createCipheriv('aes-128-cbc', key, iv);
+  const encrypted = cipher.update(data,'utf8','base64') + cipher.final('base64');
+
+  return encrypted;
 };
 
 const decrypt = (data, iv_key) => {
-  const string_iv_key = crypto.charenc.Binary.bytesToString(iv_key);
-  const string_iv = string_iv_key.substring(0, string_iv_key.length / 2);
-  const string_key = string_iv_key.substring(string_iv_key.length / 2, string_iv_key.length);
-  const iv = crypto.charenc.Binary.stringToBytes(string_iv);
-  const key = crypto.charenc.Binary.stringToBytes(string_key);
-  const aesCbc = new aesjs.ModeOfOperation.cbc(key, iv);
-  const test = aesCbc.decrypt(Buffer.from(data, 'base64'));
-  const textDecoder = new textEncoding.TextDecoder('utf-8');
-  return textDecoder.decode(pkcs7.unpad(test));
+  const iv_string = iv_key.slice(0, iv_key.length / 2);
+  const key_string = iv_key.slice(iv_key.length / 2);
+
+  const key = Buffer.from(key_string);
+  const iv = Buffer.from(iv_string);
+  
+  const cipher = crypto.createDecipheriv('aes-128-cbc', key, iv);
+  const decrypted = cipher.update(data,'base64', 'utf8') + cipher.final('utf8');
+
+  return decrypted;
 };
 
 const unescapeJson = json => json.replace(/[^\x30-\x39\x41-\x5A\x61-\x7A\x7B\x7D\x20\x26\x28\x29\x2C\x27\x22\x2E\x2F\x26\x40\x5F\x3A\x2D\x5C\x5B\x5D]/g, '').replace(/\s+/g, ' ');
@@ -142,11 +146,11 @@ const callAction = (action, deviceId, params) => {
 };
 
 const updateEncryptionToken = (oldTokenBytes, updateToken) => {
-  const updateTokenBytes = crypto.util.hexToBytes(updateToken);
+  //const buffer = Buffer.from(updateToken, 'hex').toString('hex');
   const buffer = Buffer.from(oldTokenBytes);
-  const secondbuffer = Buffer.from(updateTokenBytes);
+  const secondbuffer = Buffer.from(updateToken, 'hex');
   const thirdbuffer = Buffer.concat([buffer, secondbuffer], buffer.length + secondbuffer.length);
-  return crypto.SHA256(thirdbuffer, { asBytes: true });
+  return SHA256(thirdbuffer);
 };
 
 exports.callAction = callAction;
