@@ -1,0 +1,16 @@
+- 1.2.0 (2023-05-09) publish myjdownloader-api on npmjs
+- 1.1.5 (2023-05-09)
+    - Replaced deprecated package request-promise with axios
+    - Replaced very old crypto packages (like ezcrypto) with node:crypto
+    - RequestID received in server response is now compared to sent RequestID
+    - Added parameter destinationFolder to addLinks(...)
+    - exports CallAction(...) to allow other API calls
+ - 1.1.4 (2023-05-08)
+    - Make RequestID in uniqueRid() truely unique
+    - Fixed decryption error when reconnected before Promise resolved (persistent __deviceEncryptionToken) 
+    - Ensure eMail for login credential is toLowerCase()
+- 1.1.3 (2023-05-06)
+    - Parameters of queryLinks completed
+    - Added parameter packagesIds to queryLinks(...)
+    - Removed Strange unescape from server responses
+- 1.1.2 (2023-05-05) forked from https://github.com/malleguisse/node-jdownloader-api
