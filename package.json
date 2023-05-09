@@ -1,5 +1,5 @@
 {
-  "name": "jdownloader-api",
+  "name": "myjdownloader-api",
   "version": "1.2.0",
   "description": "A node wrapper module for My.Jdownloader.org API",
   "main": "index.js",

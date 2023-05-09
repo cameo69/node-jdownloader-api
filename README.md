@@ -4,8 +4,15 @@ Node Jdownloader API
 
 https://my.jdownloader.org/developers/
 
-This is a rewritten version of this PHP wrapper
-https://github.com/tofika/my.jdownloader.org-api-php-class
+https://github.com/cameo69/node-jdownloader-api
+
+Changes
+--------
+- Uses node:crypro instead of ezcrypto
+- Replaced deprecated request-promise with axios
+
+Forked from https://github.com/malleguisse/node-jdownloader-api, which, at the time of writing this, used deprecated packages.
+malleguisse/node-jdownloader-api is a rewritten version of this PHP wrapper https://github.com/tofika/my.jdownloader.org-api-php-class
 
 Features
 --------
