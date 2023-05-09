@@ -14,6 +14,9 @@ const __ENPOINT = 'https://api.jdownloader.org';
 const __APPKEY = 'my_jd_nodeJS_webinterface';
 const __SERVER_DOMAIN = 'server';
 const __DEVICE_DOMAIN = 'device';
+const __ALGO_HASH = 'sha256';
+const __ALGO_HMAC = 'sha256';
+const __ALGO_CRYPT = 'aes-128-cbc';
 
 let __rid_counter = 0;
 let __loginSecret;
@@ -33,9 +36,9 @@ const uniqueRid = () => {
   return __rid_counter;
 };
 
-const SHA256 = (data, encoding = 'byte') => Array.from(new Uint8Array(crypto.createHash('sha256').update(data).digest(encoding)));
+const SHA256 = (data, encoding = 'byte') => Array.from(new Uint8Array(crypto.createHash(__ALGO_HASH).update(data).digest(encoding)));
 const createSecret = (username, password, domain) => SHA256(username + password + domain);
-const sign = (key, data) => crypto.createHmac('sha256', Buffer.from(key)).update(data).digest('hex');
+const sign = (key, data) => crypto.createHmac(__ALGO_HMAC, Buffer.from(key)).update(data).digest('hex');
 
 const encrypt = (data, iv_key) => {
   const iv_string = iv_key.slice(0, iv_key.length / 2);
@@ -44,7 +47,7 @@ const encrypt = (data, iv_key) => {
   const key = Buffer.from(key_string);
   const iv = Buffer.from(iv_string);
 
-  const cipher = crypto.createCipheriv('aes-128-cbc', key, iv);
+  const cipher = crypto.createCipheriv(__ALGO_CRYPT, key, iv);
   const encrypted = cipher.update(data,'utf8','base64') + cipher.final('base64');
 
   return encrypted;
@@ -57,7 +60,7 @@ const decrypt = (data, iv_key) => {
   const key = Buffer.from(key_string);
   const iv = Buffer.from(iv_string);
   
-  const cipher = crypto.createDecipheriv('aes-128-cbc', key, iv);
+  const cipher = crypto.createDecipheriv(__ALGO_CRYPT, key, iv);
   const decrypted = cipher.update(data,'base64', 'utf8') + cipher.final('utf8');
 
   return decrypted;
