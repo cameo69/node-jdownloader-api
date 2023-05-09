@@ -83,14 +83,18 @@ const postQuery = (url, params) => {
   return requestPromise.post(options);
 };
 
+const addRidCheck = (obj, senderRid) => {
+  obj.senderRid = senderRid;
+  obj.ridMatch = (obj.rid === obj.senderRid);
+  return obj;
+}
 
 const callServer = (query, key, params) => {
-  let rid = uniqueRid();
+  const rid = uniqueRid();
   if (params) {
     if (key) {
       params = encrypt(params, key);
     }
-    //rid = __rid_counter;
   }
 
   if (query.includes('?')) {
@@ -106,8 +110,9 @@ const callServer = (query, key, params) => {
   return new Promise((resolve, rejected) => {
     postQuery(url, params)
       .then((parsedBody) => {
-        const result = decrypt(parsedBody, key);
-        resolve(JSON.parse(result));
+        let result = decrypt(parsedBody, key);
+        result = addRidCheck(JSON.parse(result), rid)
+        resolve(result);
       }).catch((err) => {
         rejected(err);
       });
@@ -127,14 +132,16 @@ const callAction = (action, deviceId, params) => {
   if (params) {
     json.params = params;
   };
+  const senderRid = json.rid;
   const currentDeviceEncryptionToken = __deviceEncryptionToken;
   const jsonData = encrypt(JSON.stringify(json), currentDeviceEncryptionToken);
   const url = __ENPOINT + query;
   return new Promise((resolve, rejected) => {
     postQuery(url, jsonData)
       .then((parsedBody) => {
-        const result = decrypt(parsedBody, currentDeviceEncryptionToken);
-        resolve(JSON.parse(result));
+        let result = decrypt(parsedBody, currentDeviceEncryptionToken);
+        result = addRidCheck(JSON.parse(result), senderRid)
+        resolve(result);
       }).catch((err) => {
         if (typeof(err.error) === "string") {
           rejected(decrypt(err.error, currentDeviceEncryptionToken));
@@ -189,7 +196,6 @@ exports.reconnect = function () {
     });
   });
 };
-
 
 exports.disconnect = function () {
   const query = `/my/disconnect?sessiontoken=${encodeURI(__sessionToken)}`;
