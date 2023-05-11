@@ -28,7 +28,7 @@ let __deviceEncryptionToken;
 const __apiVer = 1;
 
 const uniqueRid = () => {
-  newRid = Math.floor(Date.now());
+  let newRid = Math.floor(Date.now());
   while (newRid <= __rid_counter) {
     newRid++;
   } 
